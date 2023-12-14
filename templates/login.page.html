@@ -1,0 +1,124 @@
+<!-- login.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            /* Bootstrap light gray background color */
+            color: #495057;
+            /* Bootstrap dark gray text color */
+            padding: 20px;
+            text-align: center;
+
+        }
+
+        h2 {
+            color: #007bff;
+            /* Bootstrap primary color */
+            margin: 50px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        form {
+            max-width: 400px;
+            margin: auto;
+        }
+
+        label {
+            margin-top: 10px;
+            display: block;
+        }
+
+        input {
+            margin-bottom: 10px;
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        button {
+            /* width: 100%; */
+            padding: 10px;
+            box-sizing: border-box;
+            background-color: #007bff;
+            /* Bootstrap primary color */
+            color: #fff;
+            /* Bootstrap white text color */
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Login</h2>
+    <div class="container">
+
+        <form id="loginForm">
+            <p>Please fill the details to login</p>
+            <!-- <label for="username">Username:</label> -->
+            <input type="text" id="username" name="username" class="form-control" required placeholder="username/email">
+
+            <!-- <label for="password">Password:</label> -->
+            <input type="password" id="password" name="password" class="form-control" required placeholder="password">
+
+            <button type="button" class="btn btn-primary" onclick="login()">Login</button>
+            <p class="mt-3">Do't Have Any Account With Us ?</p>
+            <button class="btn btn-success" onclick="window.location.href='/register'">Register</button>
+        </form>
+
+    </div>
+
+    <!-- Bootstrap JS and dependencies (optional, for some features) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        function login() {
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+
+            // Make API request to /login with POST method
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Assuming the API response contains a token
+                    if (data.token) {
+                        // Save the token in a cookie
+                        document.cookie = `token=${data.token}; path=/`;
+
+                        // Redirect the user to /home
+                        window.location.href = '/home';
+                    } else {
+                        alert('Login failed. Please check your credentials.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while processing your request.');
+                });
+        }
+    </script>
+</body>
+
+</html>

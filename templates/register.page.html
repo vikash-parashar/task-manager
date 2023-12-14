@@ -1,0 +1,131 @@
+<!-- register.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            /* Bootstrap light gray background color */
+            color: #495057;
+            /* Bootstrap dark gray text color */
+            padding: 20px;
+            text-align: center;
+        }
+
+        h2 {
+            margin: 50px;
+            color: #007bff;
+            /* Bootstrap primary color */
+        }
+
+        form {
+            max-width: 400px;
+            margin: auto;
+        }
+
+        input,
+        select {
+            margin-bottom: 10px;
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px;
+            box-sizing: border-box;
+            background-color: #28a745;
+            /* Bootstrap success color */
+            color: #fff;
+            /* Bootstrap white text color */
+        }
+
+        p {
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Register</h2>
+    <div class="container">
+        <form id="registerForm">
+            <p>Please fill in the details to register</p>
+            <input type="text" id="firstName" name="firstName" class="form-control" required placeholder="First Name">
+            <input type="text" id="lastName" name="lastName" class="form-control" required placeholder="Last Name">
+            <input type="text" id="username" name="username" class="form-control" required placeholder="Username">
+            <input type="email" id="email" name="email" class="form-control" required placeholder="Email">
+            <input type="password" id="password" name="password" class="form-control" required placeholder="Password">
+            <input type="text" id="phone" name="phone" class="form-control" required placeholder="Phone">
+            <label for="role" style="text-align: left;" class="mt-3">Role:</label>
+            <select id="role" name="role" class="form-control">
+                <option value="Admin">Admin</option>
+                <option value="General">General</option>
+            </select>
+            <button type="button" class="btn btn-success" onclick="register()">Register</button>
+        </form>
+        <p class="mt-3">Already have an account with us?</p>
+        <button class="btn btn-primary" onclick="window.location.href='/login'">Login</button>
+    </div>
+
+    <!-- Bootstrap JS and dependencies (optional, for some features) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        function register() {
+            var firstName = document.getElementById('firstName').value;
+            var lastName = document.getElementById('lastName').value;
+            var username = document.getElementById('username').value;
+            var email = document.getElementById('email').value;
+            var password = document.getElementById('password').value;
+            var phone = document.getElementById('phone').value;
+            var role = document.getElementById('role').value;
+
+            // Make API request to /register with POST method
+            fetch('/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    firstName: firstName,
+                    lastName: lastName,
+                    username: username,
+                    email: email,
+                    password: password,
+                    phone: phone,
+                    role: role,
+                }),
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Redirect the user to /login upon successful registration
+                        window.location.href = '/login';
+                    } else {
+                        return response.json();
+                    }
+                })
+                .then(data => {
+                    if (data && data.error) {
+                        alert(data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while processing your request.');
+                });
+        }
+    </script>
+</body>
+
+</html>

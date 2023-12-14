@@ -2,16 +2,19 @@
 package config
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
+	"github.com/vikash-parashar/task-remainder/models"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
-var db *sql.DB
+var DB *gorm.DB
 
 // Load environment variables from .env file
 func LoadEnv() {
@@ -34,41 +37,81 @@ func InitDB() {
 		dbUser, dbPassword, dbName, dbSSLMode)
 
 	var err error
-	db, err = sql.Open("postgres", dbinfo)
+
+	// Set up GORM logger
+	newLogger := logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+		logger.Config{
+			SlowThreshold: time.Second,   // Slow SQL threshold
+			LogLevel:      logger.Silent, // Log level
+			Colorful:      true,          // Enable color
+		},
+	)
+
+	// Connect to the database
+	DB, err = gorm.Open(postgres.Open(dbinfo), &gorm.Config{
+		Logger: newLogger,
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Check the database connection
-	err = db.Ping()
+	// Automatically migrate the schema, creating tables
+	err = DB.AutoMigrate(&models.User{}, &models.Task{})
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// Create the tasks table if it doesn't exist
-	createTasksTable()
 }
 
 // Create the tasks table
-func createTasksTable() {
-	_, err := db.Exec(`
-		CREATE TABLE IF NOT EXISTS tasks (
-			id SERIAL PRIMARY KEY,
-			title VARCHAR(255),
-			description TEXT,
-			priority INT,
-			due_date TIMESTAMP,
-			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-		)
-	`)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
+// func createTasksTable() {
+// 	err := DB.Exec(`
+// 		CREATE TABLE IF NOT EXISTS tasks (
+// 			id SERIAL PRIMARY KEY,
+// 			user_id INT,
+// 			title VARCHAR(255),
+// 			description TEXT,
+// 			priority INT,
+// 			due_date TIMESTAMP,
+// 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+// 			FOREIGN KEY (user_id) REFERENCES users(id)
+// 		)
+// 	`).Error
+
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// }
+
+// createUserTable creates the user table in the database
+// func createUserTable() {
+// 	err := DB.Exec(`
+// 		CREATE TABLE IF NOT EXISTS users (
+// 			id SERIAL PRIMARY KEY,
+// 			first_name VARCHAR(255),
+// 			last_name VARCHAR(255),
+// 			email VARCHAR(255),
+// 			password VARCHAR(255),
+// 			phone VARCHAR(15),
+// 			username VARCHAR(255),
+// 			role VARCHAR(50),
+// 			is_active BOOLEAN,
+// 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+// 		)
+// 	`).Error
+
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// }
 
 // Close the database connection
 func CloseDB() {
-	if db != nil {
-		db.Close()
+	if DB != nil {
+		sqlDB, err := DB.DB()
+		if err != nil {
+			log.Fatal(err)
+		}
+		sqlDB.Close()
 	}
 }
